@@ -1,11 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'eclipse-temurin:17-jdk-jammy' // Java 17 리눅스 환경 제공
-            // 만약 도커 내부에서 root 권한 문제가 생기면 아래 줄 주석 해제
-            // args '-u root' 
-        }
-    }
+    agent any
 
     stages {
         stage('Checkout') {
@@ -14,12 +8,16 @@ pipeline {
             }
         }
         
-        stage('Build & Test') {
+        stage('Build in Docker') {
             steps {
-                echo 'Docker 컨테이너 내부에서 Java 코드를 빌드합니다...'
-                // 도커 컨테이너는 리눅스 환경이므로 무조건 sh 명령어를 사용!
-                sh 'mkdir -p bin' // bin 폴더가 없을 경우를 대비해 생성
-                sh 'javac -d bin src/**/*.java' 
+                echo '도커 컨테이너를 직접 실행하여 Java 코드를 빌드합니다...'
+                // sh 명령어를 통해 도커를 직접 실행! (이건 로그에서 성공했던 방식임)
+                // 현재 젠킨스 워크스페이스(코드 위치)를 도커 안의 /app 폴더로 연결해서 빌드함
+                sh '''
+                docker run --rm -v $(pwd):/app -w /app eclipse-temurin:17-jdk-jammy sh -c "
+                    mkdir -p bin && javac -d bin src/**/*.java
+                "
+                '''
             }
         }
     }
@@ -27,12 +25,11 @@ pipeline {
     post {
         success {
             echo '빌드 성공! 결과 파일을 생성합니다.'
-            // 도커 컨테이너 내부에서 생성된 파일은 Jenkins 워크스페이스로 안전하게 전달됨
-            sh 'echo "Build Successful in Docker Environment! Date: $(date)" > build_success.txt'
+            sh 'echo "Build Successful using Docker! Date: $(date)" > build_success.txt'
             archiveArtifacts artifacts: 'build_success.txt', allowEmptyArchive: true
         }
         failure {
-            echo '빌드 실패! Jenkins Console Output을 확인하세요.'
+            echo '빌드 실패! 로그를 다시 확인하세요.'
         }
     }
 }
