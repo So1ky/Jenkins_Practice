@@ -36,7 +36,7 @@ pipeline {
                 sh '''
                     echo "[+] Compiling source files..."
                     # 소스코드 경로를 찾아서 sources.txt에 목록 저장
-                    find src -name "*.java" > sources.txt
+                    find . -name "*.java" > sources.txt
                     
                     # javac로 컴파일 진행
                     javac -encoding UTF-8 -d ${CLASS_DIR} -cp ${JUNIT_JAR_PATH} @sources.txt
