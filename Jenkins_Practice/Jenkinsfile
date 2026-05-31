@@ -1,20 +1,25 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'eclipse-temurin:17-jdk-jammy' // Java 17 리눅스 환경 제공
+            // 만약 도커 내부에서 root 권한 문제가 생기면 아래 줄 주석 해제
+            // args '-u root' 
+        }
+    }
 
     stages {
         stage('Checkout') {
             steps {
-                // Git에서 코드를 가져오는 단계 (Pipeline from SCM 설정 시 생략 가능하지만 명시적으로 두어도 좋습니다)
                 checkout scm
             }
         }
         
         stage('Build & Test') {
             steps {
-                echo 'Java 코드를 빌드하고 테스트합니다...'
-                // 실제 빌드 환경에 맞춰 아래 명령어를 수정하세요. (예: Maven, Gradle 또는 javac)
-                // 예시 (Windows 환경): bat 'javac -d bin src/**/*.java'
-                // 예시 (Linux 환경): sh 'javac -d bin src/**/*.java'
+                echo 'Docker 컨테이너 내부에서 Java 코드를 빌드합니다...'
+                // 도커 컨테이너는 리눅스 환경이므로 무조건 sh 명령어를 사용!
+                sh 'mkdir -p bin' // bin 폴더가 없을 경우를 대비해 생성
+                sh 'javac -d bin src/**/*.java' 
             }
         }
     }
@@ -22,20 +27,12 @@ pipeline {
     post {
         success {
             echo '빌드 성공! 결과 파일을 생성합니다.'
-            
-            // 1. 성공 메시지를 담은 txt 파일 생성 (운영체제에 맞게 선택)
-            // Linux/Mac/Jenkins 컨테이너 환경인 경우:
-            sh 'echo "Build Successful! Date: $(date)" > build_success.txt'
-            
-            // Windows 환경인 경우 위 sh 대신 아래 bat 명령어 사용:
-            // bat 'echo Build Successful! > build_success.txt'
-            
-            // 2. 생성된 txt 파일을 Jenkins Artifact(결과물)로 보관하여 UI에서 다운로드할 수 있게 함
+            // 도커 컨테이너 내부에서 생성된 파일은 Jenkins 워크스페이스로 안전하게 전달됨
+            sh 'echo "Build Successful in Docker Environment! Date: $(date)" > build_success.txt'
             archiveArtifacts artifacts: 'build_success.txt', allowEmptyArchive: true
         }
         failure {
-            // 조건 4: 빌드 실패 시 로그 확인을 위한 안내
-            echo '빌드 실패! Jenkins Console Output에서 실패 원인을 분석하고 코드를 수정하세요.'
+            echo '빌드 실패! Jenkins Console Output을 확인하세요.'
         }
     }
 }
