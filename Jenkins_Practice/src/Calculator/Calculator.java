@@ -7,7 +7,7 @@ public class Calculator {
         System.out.println("1 + 4 = " + add(1, 4));
         System.out.println("10 - 3 = " + subtract(10, 3));
         System.out.println("2 * 6 = " + multiply(2, 6));
-        System.out.println("14 / 2 = " + divide(14, 2));
+        System.out.println("8 / 2 = " + divide(8, 2));
     }
 
     static int add(int a, int b) {
