@@ -3,8 +3,7 @@ package Calculator;
 public class Calculator {
 	
 	public static void main(String[] args) {
-        System.out.println("Hello, Jenkins!");
-        System.out.println("Hello");
+        System.out.println("Hello, Jenkins! Webhook Test Success!!!");
         System.out.println("1 + 4 = " + add(1, 4));
         System.out.println("10 - 3 = " + subtract(10, 3));
         System.out.println("2 * 6 = " + multiply(2, 6));
