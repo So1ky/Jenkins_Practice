@@ -77,6 +77,12 @@ pipeline {
         }
         success {
             echo "Build and test succeeded"
+            mail subject: "빌드 성공: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "빌드와 테스트가 성공적으로 완료되었습니다. 상세 결과는 다음 URL에서 확인하세요: ${env.BUILD_URL}",
+                 to: 'xofla0331@gmail.com',
+                 from: 'jenkins@your-company.com',
+                 replyTo: 'admin@your-company.com',
+                 mimeType: 'text/plain'
         }
     }
 }
